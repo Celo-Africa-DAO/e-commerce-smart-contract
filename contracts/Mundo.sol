@@ -14,8 +14,8 @@ interface IERC20Token {
 }
 
 /**
- * @title Mundo Marketplace
- * @dev A decentralized marketplace for listing and buying items using ERC20 tokens.
+ * @title Mundo E-commerce
+ * @dev A decentralized e-commerce for listing and buying items using ERC20 tokens.
  */
 contract Mundo {
     /// @notice Address of the contract owner
