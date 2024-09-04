@@ -21,8 +21,9 @@ contract Mundo {
     /// @notice Address of the contract owner
     address public owner;
 
-    /// @notice ERC20 token address used for payments
-    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+    
+    /// @notice ITEMID for autogenerating
+    uint256 itemId;
 
     /// @notice Struct representing an item for sale
     struct Item {
@@ -41,6 +42,9 @@ contract Mundo {
         uint256 time;
         Item item;
     }
+    /// @notice Mapping of ERC20 tokens Allowed e.g Ckes, cUSD
+
+    mapping(address =>bool)public checkAllowedTokens;
 
     /// @notice Mapping of item IDs to their corresponding items
     mapping(uint256 => Item) public items;
@@ -63,6 +67,14 @@ contract Mundo {
         _;
     }
 
+/**
+    *@notice Modifier to Check if token is allowed as a mode of payment
+    *
+    */
+    modifier isTokenAllowed( address _tokenAddress){
+        require(checkAllowedTokens[_tokenAddress],"token not allowed");
+        _;
+    }
     /**
      * @dev Constructor sets the initial owner of the contract
      */
@@ -70,9 +82,11 @@ contract Mundo {
         owner = msg.sender;
     }
 
+    
+
     /**
      * @notice List a new item for sale
-     * @param _id The unique identifier of the item
+    
      * @param _name The name of the item
      * @param _category The category of the item
      * @param _image A link to the image of the item
@@ -82,7 +96,7 @@ contract Mundo {
      * @param _description A brief description of the item
      */
     function list(
-        uint256 _id,
+        
         string memory _name,
         string memory _category,
         string memory _image,
@@ -92,8 +106,10 @@ contract Mundo {
         string memory _description
     ) public onlyOwner {
         // Create Item
+
+        uint _itemid = itemId ;
         Item memory item = Item(
-            _id,
+            _itemid,
             _name,
             _category,
             _image,
@@ -104,7 +120,8 @@ contract Mundo {
         );
 
         // Add Item to mapping
-        items[_id] = item;
+        items[_itemid] = item;
+        itemId ++;
 
         // Emit event
         emit List(_name, _cost, _stock);
@@ -113,13 +130,14 @@ contract Mundo {
     /**
      * @notice Purchase an item from the marketplace
      * @param _id The unique identifier of the item being purchased
+     *@param  _tokenAddress erc20 token to pay with "cKes or Cusd"
      */
-    function buy(uint256 _id) public payable {
+    function buy(uint256 _id, address _tokenAddress) public  isTokenAllowed(_tokenAddress) {
         // Fetch item
         Item memory item = items[_id];
 
         // Require enough ether to buy item
-        require(msg.value >= item.cost, "Not enough funds");
+        
 
         // Require item is in stock
         require(item.stock > 0, "Item out of stock");
@@ -134,9 +152,9 @@ contract Mundo {
         // Subtract stock
         items[_id].stock = item.stock - 1;
 
-        // Pay order
+        // Pay order 
         require(
-            IERC20Token(cUsdTokenAddress).transferFrom(
+            IERC20Token(_tokenAddress).transferFrom(
                 msg.sender,
                 owner,
                 item.cost
@@ -151,15 +169,15 @@ contract Mundo {
     /**
      * @notice Retrieve all orders made by a specific user
      * @param user The address of the user whose orders are being retrieved
-     * @return An array of orders made by the user
+     * @return  userOrders An array of orders made by the user
      */
     function getAllOrders(address user)
         external
         view
-        returns (Order[] memory)
+        returns (Order[] memory userOrders)
     {
         uint256 count = orderCount[user];
-        Order[] memory userOrders = new Order[](count);
+         userOrders = new Order[](count);
 
         for (uint256 i = 1; i <= count; i++) {
             userOrders[i - 1] = orders[user][i];
@@ -184,14 +202,41 @@ contract Mundo {
 
     /**
      * @notice Retrieve item details by item ID
-     * @param itemId The unique identifier of the item
+     * @param _itemId The unique identifier of the item
      * @return The details of the item
      */
-    function getItem(uint256 itemId)
+    function getItem(uint256 _itemId)
         external
         view
         returns (Item memory)
     {
-        return items[itemId];
+        return items[_itemId];
+    }
+
+    /**
+    *@notice to return all marketplace items
+    *@return item all the listed items on the market place
+    */
+
+    function getAllMarketPlaceItems()public view returns(Item[] memory item){
+        item = new Item[](itemId);
+
+        for(uint i=0; i<  itemId; i++){
+            item[i] = items[i];
+
+        }
+    }
+
+    /**
+    *@notice Add token that are acceptable for payment  "cKes & cUSD"
+    @param _tokenAddress The new ERC20 token to be added for payment
+    */
+
+
+    function addToken(address _tokenAddress)public onlyOwner(){
+        require(!checkAllowedTokens[_tokenAddress],"token already listed");
+
+        checkAllowedTokens[_tokenAddress] = true;
+
     }
 }
