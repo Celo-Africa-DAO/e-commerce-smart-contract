@@ -1,5 +1,5 @@
 export type Item={
-    _id?:BigInt,
+    _id:BigInt,
     _name:string,
     _category:string,
     _image:string,
