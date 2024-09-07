@@ -4,7 +4,7 @@ Chain: alfajores
 
 
 
-V2:
+## V2:
 Contract Address: 0xBFF3d81D84Ad32B85396C894C9093C957e8f6506
 Chain: Celo Mainnet
 
