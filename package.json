@@ -5,6 +5,8 @@
   "license": "MIT",
   "scripts": {
     "test": "npx hardhat test ts-src/test/index.ts ",
+    "deploy-celo": "npx hardhat ignition  deploy ./ignition/modules/diploy.ts --reset --network celo",
+    "deploy-alfajores": "npx hardhat ignition  deploy ./ignition/modules/diploy.ts --reset  --network alfajores",
     "compile": "hardhat compile"
   },
   "dependencies": {
